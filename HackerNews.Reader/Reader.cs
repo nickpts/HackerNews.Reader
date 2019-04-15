@@ -8,6 +8,11 @@ using System.Net.Http;
 
 namespace HackerNews.Reader
 {
+    /// <summary>
+    /// Uses the HackerNews API to read top stories/ask/jobs/polls
+    /// Performs validation according to spec and outputs results to console
+    /// in JSON format. Exceptions are stored for examination at the end of the stream
+    /// </summary>
     public class Reader
     {
         public int Posts { get; protected set; }

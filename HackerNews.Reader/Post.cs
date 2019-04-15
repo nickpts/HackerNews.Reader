@@ -16,7 +16,6 @@ namespace HackerNews.Reader
         public List<int> Kids { get; set; }
         public int Score { get; set; }
         public int Time { get; set; }
-        public string Type { get; set; }
         public int Rank { get; set; }
 
         public int Comments { get; set; }
@@ -29,7 +28,7 @@ namespace HackerNews.Reader
             if (string.IsNullOrEmpty(By) || By.Length > 256)
                 throw new ArgumentException("Author cannot be empty or longer than 256 characters");
             
-            //not testing for url as ask/jobs/polls have empty url
+            //not testing for url as ask/jobs/polls have empty url 
 
             if (!string.IsNullOrEmpty(Url) && !Uri.IsWellFormedUriString(Url, UriKind.Absolute))
                 throw new ArgumentException($"Uri: {Url} is malformed");
