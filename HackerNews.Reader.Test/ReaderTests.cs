@@ -30,11 +30,19 @@ namespace HackerNews.Reader.Test
         [TestMethod]
         public void ReaderRetrievesPostsCorrectly()
         {
-            var scraper = new Reader(5);
-            scraper.Run(true);
+            var scraper = new Reader(5, true, CommentRecursionLevel.None);
+            scraper.RetrievePosts();
             scraper.ShowExceptions();
 
             Console.ReadLine();
+        }
+        [TestMethod]
+        public void ReaderRetrievesJsonPostsCorrectly()
+        {
+            var scraper = new Reader(1, true, CommentRecursionLevel.Full);
+            var list = scraper.RetrievePostsInJsonFormat();
+            scraper.ShowExceptions();
+
         }
     }
 }
