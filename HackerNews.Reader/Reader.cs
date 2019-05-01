@@ -16,24 +16,12 @@ namespace HackerNews.Reader
     public class Reader
     {
         public int Posts { get; protected set; }
-        public readonly List<string> SupportedSites = new List<string> { "hackernews" };
         public List<Exception> Exceptions { get; protected set; }
+        public const string hackerNewsTopStoriesApiCall = "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty";
 
-        public Reader(string site, string postsInput)
+
+        public Reader(int posts)
         {
-            bool parse = int.TryParse(postsInput, out int posts);
-
-            if (string.IsNullOrEmpty(site))
-                throw new ArgumentNullException("Site to scrape not specified");
-
-            if (!SupportedSites.Contains(site))
-            {
-                throw new NotSupportedException($"{site} not currently supported!");
-            }
-
-            if (!parse)
-                throw new ArgumentException("Invalid number of posts specified - a number is expected");
-
             if (posts > 100 | posts == 0)
             {
                 throw new ArgumentException("Please specify a number of posts between 1-100");
@@ -43,51 +31,48 @@ namespace HackerNews.Reader
             Exceptions = new List<Exception>();
         }
 
-        public Task<List<Post>> Run(bool retrieveComments = false)
+        public List<Post> Run(bool retrieveComments = false)
         {
-            return Task.Run(() =>
+            List<Post> posts = new List<Post>();
+            var topStories = GetPost(hackerNewsTopStoriesApiCall);
+            List<int> ids = JsonConvert.DeserializeObject<List<int>>(topStories).Take(Posts).ToList();
+
+            int rank = 1;
+
+            foreach (int id in ids)
             {
-                List<Post> posts = new List<Post>();
-                var topStories = GetPost("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty");
-                List<int> ids = JsonConvert.DeserializeObject<List<int>>(topStories).Take(Posts).ToList();
-
-                int rank = 1;
-
-                foreach (int id in ids)
+                try
                 {
-                    try
-                    {
-                        string link = $"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty";
-                        var list = GetPost(link);
-                        Post article = JsonConvert.DeserializeObject<Post>(list);
+                    string link = $"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty";
+                    var list = GetPost(link);
+                    Post article = JsonConvert.DeserializeObject<Post>(list);
 
-                        if (retrieveComments)
+                    if (retrieveComments)
+                    {
+                        foreach (var commentId in article.Kids)
                         {
-                            foreach (var commentId in article.Kids)
-                            {
-                                string commentLink = $"https://hacker-news.firebaseio.com/v0/item/{commentId}.json?print=pretty";
-                                var jsonComment = GetPost(commentLink);
-                                Post comment = JsonConvert.DeserializeObject<Post>(jsonComment);
-                                article.Comments.Add(comment);
-                            }
+                            string commentLink = $"https://hacker-news.firebaseio.com/v0/item/{commentId}.json?print=pretty";
+                            var jsonComment = GetPost(commentLink);
+                            Post comment = JsonConvert.DeserializeObject<Post>(jsonComment);
+                            article.Comments.Add(comment);
                         }
-
-                        article.Validate();
-
-                        // the API call retrieves posts according to rank which is not contained in the response
-                        // so we increment here.
-                        article.Rank = rank++;
-
-                        posts.Add(article);
                     }
-                    catch (Exception e)
-                    {
-                        Exceptions.Add(e);
-                    }
+
+                    article.Validate();
+
+                    // the API call retrieves posts according to rank which is not contained in the response
+                    // so we increment here.
+                    article.Rank = rank++;
+
+                    posts.Add(article);
                 }
+                catch (Exception e)
+                {
+                    Exceptions.Add(e);
+                }
+            }
 
-                return posts;
-            });
+            return posts;
         }
 
         public Task ShowExceptions()
