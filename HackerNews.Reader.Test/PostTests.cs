@@ -79,7 +79,7 @@ namespace HackerNews.Reader.Test
         [ExpectedException(typeof(ArgumentException))]
         public void PostShouldThrowExceptionIfCommentsLessThanZero()
         {
-            var post = new Post() { Title = "test", By = "test", Url = "http://www.hackernews.com", Score = 10, Comments = -1 };
+            var post = new Post() { Title = "test", By = "test", Url = "http://www.hackernews.com", Score = 10 };
             post.Validate();
         }
 
@@ -87,7 +87,7 @@ namespace HackerNews.Reader.Test
         [ExpectedException(typeof(ArgumentException))]
         public void PostShouldThrowExceptionIfRankLessThanZero()
         {
-            var post = new Post() { Title = "test", By = "test", Url = "http://www.hackernews.com", Score = 10, Comments = 10, Rank = -1 };
+            var post = new Post() { Title = "test", By = "test", Url = "http://www.hackernews.com", Score = 10, Rank = -1 };
             post.Validate();
         }
 
@@ -98,7 +98,6 @@ namespace HackerNews.Reader.Test
                 By = "test",
                 Url = "http://www.hackernews.com",
                 Score = 10,
-                Comments = 10,
                 Rank = 10,
                 Kids = new List<int> { 1, 2, 3, 4, 5 }
             };

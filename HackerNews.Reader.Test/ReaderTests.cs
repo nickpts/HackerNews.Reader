@@ -15,32 +15,26 @@ namespace HackerNews.Reader.Test
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void ReaderThrowsExceptionIfNoSiteSpecified()
+        public void ReaderThrowsExceptionIfZeroPostsSpecified()
         {
-            var reader = new Reader(string.Empty, string.Empty);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(NotSupportedException))]
-        public void ReaderThrowsExceptionIfUnsupportedSite()
-        {
-            var reader = new Reader("dailywtf", string.Empty);
+            var reader = new Reader(0);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ReaderThrowsExceptionIfInvalidInput()
+        public void ReaderThrowsExceptionIfNegativePostsSpecified()
         {
-            var reader = new Reader("hackernews", "test");
+            var reader = new Reader(-1);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void ReaderThrowsExceptionIfInvalidNumberOfPosts()
+        public void ReaderRetrievesPostsCorrectly()
         {
-            var reader = new Reader("hackernews", "110");
+            var scraper = new Reader(5);
+            scraper.Run(true);
+            scraper.ShowExceptions();
+
+            Console.ReadLine();
         }
-
-
     }
 }

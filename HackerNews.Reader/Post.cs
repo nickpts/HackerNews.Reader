@@ -17,8 +17,9 @@ namespace HackerNews.Reader
         public int Score { get; set; }
         public int Time { get; set; }
         public int Rank { get; set; }
+        public string Text { get; set; }
 
-        public int Comments { get; set; }
+        public List<Post> Comments { get; set; } = new List<Post>();
 
         public void Validate()
         {
@@ -36,18 +37,8 @@ namespace HackerNews.Reader
             if (Score < 0)
                 throw new ArgumentException("Points cannot be less than zero");
 
-            if (Comments < 0)
-                throw new ArgumentException("Comments cannot be less than zero");
-
             if (Rank < 0)
                 throw new ArgumentException("Rank cannot be less than zero");
-        }
-
-        [OnSerializing]
-        internal void OnSerializingMethod(StreamingContext context)
-        {
-            Comments = Kids != null ? Kids.Count : 0;
-            Kids = new List<int>();
         }
     }
 }

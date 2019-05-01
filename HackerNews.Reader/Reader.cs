@@ -20,8 +20,8 @@ namespace HackerNews.Reader
         public List<Exception> Exceptions { get; protected set; }
 
         public Reader(string site, string postsInput)
-        {          
-            bool parse = int.TryParse(postsInput, out int posts);   
+        {
+            bool parse = int.TryParse(postsInput, out int posts);
 
             if (string.IsNullOrEmpty(site))
                 throw new ArgumentNullException("Site to scrape not specified");
@@ -43,39 +43,51 @@ namespace HackerNews.Reader
             Exceptions = new List<Exception>();
         }
 
-        public Task Run()
+        public Task<List<Post>> Run(bool retrieveComments = false)
         {
-            var topStories = GetPost("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty");
-            List<int> ids = JsonConvert.DeserializeObject<List<int>>(topStories).Take(Posts).ToList();
-
-            int rank = 1;
-
-            foreach (int id in ids)
+            return Task.Run(() =>
             {
-                try
+                List<Post> posts = new List<Post>();
+                var topStories = GetPost("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty");
+                List<int> ids = JsonConvert.DeserializeObject<List<int>>(topStories).Take(Posts).ToList();
+
+                int rank = 1;
+
+                foreach (int id in ids)
                 {
-                    string link = $"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty";
+                    try
+                    {
+                        string link = $"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty";
+                        var list = GetPost(link);
+                        Post article = JsonConvert.DeserializeObject<Post>(list);
 
-                    var list = GetPost(link);
+                        if (retrieveComments)
+                        {
+                            foreach (var commentId in article.Kids)
+                            {
+                                string commentLink = $"https://hacker-news.firebaseio.com/v0/item/{commentId}.json?print=pretty";
+                                var jsonComment = GetPost(commentLink);
+                                Post comment = JsonConvert.DeserializeObject<Post>(jsonComment);
+                                article.Comments.Add(comment);
+                            }
+                        }
 
-                    Post article = JsonConvert.DeserializeObject<Post>(list);
-                    article.Validate();
+                        article.Validate();
 
-                    // the API call retrieves posts according to rank which is not contained in the response
-                    // so we increment here.
-                    article.Rank = rank++;
+                        // the API call retrieves posts according to rank which is not contained in the response
+                        // so we increment here.
+                        article.Rank = rank++;
 
-                    Console.WriteLine(JsonConvert.SerializeObject(article, Formatting.Indented));
-                    Console.WriteLine();
+                        posts.Add(article);
+                    }
+                    catch (Exception e)
+                    {
+                        Exceptions.Add(e);
+                    }
                 }
-                catch (Exception e)
-                {
-                    Exceptions.Add(e);
-                }
-            }
 
-            return Task.CompletedTask;
-
+                return posts;
+            });
         }
 
         public Task ShowExceptions()
