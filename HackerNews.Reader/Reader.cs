@@ -8,6 +8,15 @@ using System.Net.Http;
 
 namespace HackerNews.Reader
 {
+    public enum PostType
+    {
+        Stories,
+        Jobs,
+        Ask,
+        Show,
+        All
+    }
+
     /// <summary>
     /// Specifies how deep to go when retrieving comments for a story
     /// </summary>
@@ -30,7 +39,15 @@ namespace HackerNews.Reader
         private bool _retrieveComments;
         private CommentRecursionLevel _commentRecursionLevel;
 
-        public Reader(int posts, bool retrieveComments = false, CommentRecursionLevel level = CommentRecursionLevel.None)
+        public Dictionary<PostType, string> postTypes = new Dictionary<PostType, string>()
+        {
+            { PostType.Stories,  "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty" },
+            { PostType.Jobs, "https://hacker-news.firebaseio.com/v0/jobstories.json?print=pretty" },
+            { PostType.Ask, "https://hacker-news.firebaseio.com/v0/askstories.json?print=pretty" },
+            { PostType.Show, "https://hacker-news.firebaseio.com/v0/showstories.json?print=pretty" }
+        };
+
+        public Reader(int posts,  bool retrieveComments = false, CommentRecursionLevel level = CommentRecursionLevel.None)
         {
             if (posts > 100 | posts == 0)
                 throw new ArgumentException("Please specify a number of posts between 1-100");
@@ -41,7 +58,7 @@ namespace HackerNews.Reader
             Exceptions = new List<Exception>();
         }
 
-        public List<Post> RetrievePosts()
+        public List<Post> RetrievePosts(PostType postType = PostType.All)
         {
             List<Post> posts = new List<Post>();
             var topStories = GetPost(hackerNewsTopStoriesApiUri);
