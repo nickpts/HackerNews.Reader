@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Web.Scraper": {
-      "commandName": "Project",
-      "commandLineArgs": "hackernews --posts 100"
-    }
-  }
-}

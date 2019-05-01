@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HackerNews.Reader", "Hacker
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HackerNews.Scraper.Test", "HackerNews.Reader.Test\HackerNews.Scraper.Test.csproj", "{9C1E3B7D-475D-4505-A0FF-45AC4B3D4CEA}"
 EndProject
-Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{3960247D-2E9A-46CC-A2C0-625886FE96D1}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{9C1E3B7D-475D-4505-A0FF-45AC4B3D4CEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C1E3B7D-475D-4505-A0FF-45AC4B3D4CEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9C1E3B7D-475D-4505-A0FF-45AC4B3D4CEA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3960247D-2E9A-46CC-A2C0-625886FE96D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3960247D-2E9A-46CC-A2C0-625886FE96D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3960247D-2E9A-46CC-A2C0-625886FE96D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3960247D-2E9A-46CC-A2C0-625886FE96D1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
