@@ -1,9 +1,0 @@
-version: '3.4'
-
-services:
-  hackernews.reader:
-    image: ${DOCKER_REGISTRY-}hackernewsreader
-    build:
-      context: .
-      dockerfile: HackerNews.Reader/Dockerfile
-
