@@ -77,7 +77,7 @@ namespace HackerNews.Reader
 
             foreach (var post in posts)
             {
-                string json = JsonConvert.SerializeObject(post);
+                string json = JsonConvert.SerializeObject(post, Formatting.Indented);
                 jsonPosts.Add(json);
 
                 if (outputToConsole)
