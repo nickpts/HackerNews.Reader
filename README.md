@@ -11,11 +11,6 @@ Other approaches considered:
 - IronWebScraper: newer third-party library which is more lightweight than HtmlAgilityPack, unfortunately not available for .NET Core.
 - Algolia API: older HN web API. Clunky with limited calls available. 
 
-#### Scope
-The code is as consise as it could be made while fullfilling the spec. Out of scope at this point were interfaces and dependency injection. These increase modularity and reduce maintenance and enable mocking in unit testing. For the size of the project, I decided to use concrete classes only.
-
-Unit tests cover all input validation and main functionality routes.
-
 #### How to run
 The following third party libraries are needed:
 1) Newtonsoft.Json (for serialization/deserialization)
