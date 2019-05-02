@@ -2,6 +2,8 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using FluentAssertions;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace HackerNews.Reader.Test
 {
@@ -30,19 +32,8 @@ namespace HackerNews.Reader.Test
         [TestMethod]
         public void ReaderRetrievesPostsCorrectly()
         {
-            var scraper = new Reader(5, true, CommentRecursionLevel.None);
+            var scraper = new Reader(5, true, CommentLevel.None);
             scraper.RetrievePosts();
-            scraper.ShowExceptions();
-
-            Console.ReadLine();
-        }
-        [TestMethod]
-        public void ReaderRetrievesJsonPostsCorrectly()
-        {
-            var scraper = new Reader(1, true, CommentRecursionLevel.Full);
-            var list = scraper.RetrievePostsInJsonFormat();
-            scraper.ShowExceptions();
-
         }
     }
 }

@@ -18,8 +18,9 @@ namespace HackerNews.Reader
         public int Time { get; set; }
         public int Rank { get; set; }
         public string Text { get; set; }
-
+        public bool HasKids => Kids != null;
         public List<Post> Comments { get; set; } = new List<Post>();
+        public bool IsHiring => Title.Contains("Ask HN: Who is hiring");
 
         public void Validate()
         {

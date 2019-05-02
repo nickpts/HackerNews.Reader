@@ -1,27 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 
 using Newtonsoft.Json;
-using System.Threading.Tasks;
-using System.Net.Http;
 
 namespace HackerNews.Reader
 {
+    /// <summary>
+    /// Specifies type of posts to retrieve
+    /// </summary>
     public enum PostType
     {
         Stories,
         Jobs,
         Ask,
-        Show,
-        All
+        Show
     }
 
     /// <summary>
     /// Specifies how deep to go when retrieving comments for a story
     /// </summary>
-    public enum CommentRecursionLevel
-    { 
+    public enum CommentLevel
+    {
         None, // no replies
         Full // all comments
     }
@@ -34,10 +35,8 @@ namespace HackerNews.Reader
     public class Reader
     {
         public int Posts { get; protected set; }
-        public List<Exception> Exceptions { get; protected set; }
-        public const string hackerNewsTopStoriesApiUri = "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty";
         private bool _retrieveComments;
-        private CommentRecursionLevel _commentRecursionLevel;
+        private CommentLevel _commentRecursionLevel;
 
         public Dictionary<PostType, string> postTypes = new Dictionary<PostType, string>()
         {
@@ -47,80 +46,133 @@ namespace HackerNews.Reader
             { PostType.Show, "https://hacker-news.firebaseio.com/v0/showstories.json?print=pretty" }
         };
 
-        public Reader(int posts,  bool retrieveComments = false, CommentRecursionLevel level = CommentRecursionLevel.None)
+        public Reader(int posts = 100, bool retrieveComments = false, CommentLevel level = CommentLevel.None)
         {
-            if (posts > 100 | posts == 0)
-                throw new ArgumentException("Please specify a number of posts between 1-100");
+            if (posts == 0 || posts < 0)
+                throw new ArgumentException("Please specify a valid number of posts");
 
             _retrieveComments = retrieveComments;
             _commentRecursionLevel = level;
             Posts = posts;
-            Exceptions = new List<Exception>();
         }
 
-        public List<Post> RetrievePosts(PostType postType = PostType.All)
+        public List<Post> RetrievePosts(PostType postType = PostType.Stories)
         {
-            List<Post> posts = new List<Post>();
-            var topStories = GetPost(hackerNewsTopStoriesApiUri);
-            List<int> ids = JsonConvert.DeserializeObject<List<int>>(topStories).Take(Posts).ToList();
-
-            int rank = 1;
-
-            foreach (int id in ids)
-            {
-                try
-                {
-                    string link = $"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty";
-                    var list = GetPost(link);
-                    Post article = JsonConvert.DeserializeObject<Post>(list);
-
-                    if (_retrieveComments)
-                    {
-                        foreach (var commentId in article.Kids)
-                        {
-                            string commentLink = $"https://hacker-news.firebaseio.com/v0/item/{commentId}.json?print=pretty";
-                            var jsonComment = GetPost(commentLink);
-                            Post comment = JsonConvert.DeserializeObject<Post>(jsonComment);
-                            article.Comments.Add(comment);
-                        }
-                    }
-
-                    article.Validate();
-
-                    // the API call retrieves posts according to rank which is not contained in the response
-                    // so we increment here.
-                    article.Rank = rank++;
-
-                    posts.Add(article);
-                }
-                catch (Exception e)
-                {
-                    Exceptions.Add(e);
-                }
-            }
-
-            return posts;
+            var uri = GetPost(postTypes[postType]);
+            var ids = JsonConvert.DeserializeObject<List<int>>(uri).Take(Posts).ToArray();
+            
+            return RetrievePostsById(ids);
         }
 
-        public List<string> RetrievePostsInJsonFormat()
+        /// <summary>
+        /// Retrieves posts and comments in json format, optionally outputs to console
+        /// </summary>
+        /// <param name="postType"></param>
+        /// <param name="outputToConsole"></param>
+        /// <returns></returns>
+        public List<string> RetrievePostsInJsonFormat(PostType postType = PostType.Stories, bool outputToConsole = false)
         {
-            var posts = RetrievePosts();
+            var posts = RetrievePosts(postType);
             var jsonPosts = new List<string>();
 
             foreach (var post in posts)
             {
                 string json = JsonConvert.SerializeObject(post);
                 jsonPosts.Add(json);
+
+                if (outputToConsole)
+                    Console.WriteLine(json);
             }
 
             return jsonPosts;
         }
 
-        public Task ShowExceptions()
+        public List<Post> RetrievePostsById(int[] ids)
         {
-            Exceptions.ForEach(ex => Console.WriteLine(ex));
+            var posts = new List<Post>();
+            int rank = 1;
 
-            return Task.CompletedTask;
+            foreach (int id in ids)
+            {
+                string link = $"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty";
+                var list = GetPost(link);
+                Post article = JsonConvert.DeserializeObject<Post>(list);
+
+                if (_retrieveComments)
+                {
+                    article = RetrieveComments(article);
+                }
+
+                article.Validate();
+
+                // the API call retrieves posts according to rank which is not contained in the response
+                // so we increment here.
+                article.Rank = rank++;
+                posts.Add(article);
+            }
+
+            return posts;
+        }
+
+        /// <summary>
+        /// Retrieves only "Who is hiring" posts
+        /// </summary>
+        /// <returns></returns>
+        public List<Post> RetrieveHiringPosts()
+        {
+            var uri = GetPost(postTypes[PostType.Stories]);
+            var ids = JsonConvert.DeserializeObject<List<int>>(uri).Take(Posts).ToArray();
+            var posts = new List<Post>();
+            int rank = 1;
+
+            foreach (int id in ids)
+            {
+                string link = $"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty";
+                var list = GetPost(link);
+                Post article = JsonConvert.DeserializeObject<Post>(list);
+
+                if (!article.IsHiring) continue;
+
+                if (_retrieveComments)
+                {
+                    article = RetrieveComments(article);
+                }
+
+                article.Validate();
+
+                // the API call retrieves posts according to rank which is not contained in the response
+                // so we increment here.
+                article.Rank = rank++;
+                posts.Add(article);
+            }
+
+            return posts;
+        }
+
+        #region Private implementation
+
+        /// <summary>
+        /// If all comments are specified, calls itself recursively to find descendants.
+        /// </summary>
+        /// <returns></returns>
+        private Post RetrieveComments(Post comment)
+        {
+            if (!comment.HasKids) return comment;
+
+            foreach (var commentId in comment.Kids)
+            {
+                string commentLink = $"https://hacker-news.firebaseio.com/v0/item/{commentId}.json?print=pretty";
+                var jsonComment = GetPost(commentLink);
+                Post descendantComment = JsonConvert.DeserializeObject<Post>(jsonComment);
+                comment.Comments.Add(comment);
+
+                if (_commentRecursionLevel == CommentLevel.Full)
+                {
+                    RetrieveComments(descendantComment);
+                }
+            }
+
+            return comment;
         }
 
         private string GetPost(string url)
@@ -130,5 +182,7 @@ namespace HackerNews.Reader
                 return httpClient.GetStringAsync(new Uri(url)).Result; // no real benefit from async/await here
             }
         }
+
+        #endregion
     }
 }
