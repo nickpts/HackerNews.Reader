@@ -77,33 +77,10 @@ namespace HackerNews.Reader.Test
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void PostShouldThrowExceptionIfCommentsLessThanZero()
-        {
-            var post = new Post() { Title = "test", By = "test", Url = "http://www.hackernews.com", Score = 10 };
-            post.Validate();
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void PostShouldThrowExceptionIfRankLessThanZero()
         {
             var post = new Post() { Title = "test", By = "test", Url = "http://www.hackernews.com", Score = 10, Rank = -1 };
             post.Validate();
-        }
-
-        [TestMethod]
-        public void OnSerialisationKidsAreEmpty()
-        {
-            var post = new Post() { Title = "test",
-                By = "test",
-                Url = "http://www.hackernews.com",
-                Score = 10,
-                Rank = 10,
-                Kids = new List<int> { 1, 2, 3, 4, 5 }
-            };
-
-            JsonConvert.SerializeObject(post, Formatting.Indented);
-            Assert.AreEqual(post.Kids.Count, 0);
         }
     }
 }

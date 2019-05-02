@@ -16,7 +16,7 @@ namespace HackerNews.Reader.Test
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void ReaderThrowsExceptionIfZeroPostsSpecified()
         {
             var reader = new Reader(0);
