@@ -6,6 +6,15 @@
     <DockerfileRunArguments>hackernews --post 100</DockerfileRunArguments>
     <ApplicationIcon />
     <StartupObject />
+    <Description>A .NET standard library that that retrieves HackerNews posts in either POCO or JSON format.</Description>
+    <Copyright>Copyright Nick Patsaris</Copyright>
+    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/nickpts/HackerNews.Reader</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/nickpts/HackerNews.Reader.git</RepositoryUrl>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Company />
+    <Product />
+    <Authors>Nick Patsaris</Authors>
   </PropertyGroup>
 
   <ItemGroup>
