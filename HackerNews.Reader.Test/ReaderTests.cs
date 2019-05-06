@@ -32,8 +32,8 @@ namespace HackerNews.Reader.Test
         [TestMethod]
         public void ReaderRetrievesPostsCorrectly()
         {
-   //         var scraper = new Reader(1, CommentLevel.Full);
-			//var post = scraper.GetPostById(19797594, true).Result;
+            var scraper = new Reader(1, CommentLevel.Full);
+			var post = scraper.GetPostById(19797594, new System.Threading.CancellationToken(), true).Result;
         }
     }
 }

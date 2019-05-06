@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -33,11 +34,15 @@ namespace HackerNews.Reader
             _numberOfPosts = numberOfPosts;
         }
 
-		public async Task<Post> GetPostById(int id, bool returnNullIfNotHiringPost = false)
+		/// <returns></returns>
+		public async Task<Post> GetPostById(int id, CancellationToken token, bool returnNullIfNotHiringPost = false)
 		{
 			string link = $"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty";
 			var list = await InvokeHackerNewsApi(link);
 			Post article = JsonConvert.DeserializeObject<Post>(list);
+
+			if (token.IsCancellationRequested)
+				throw new TaskCanceledException($"Stopped at parent: { article.Id } at { DateTime.Now }");
 
 			// Special case, due to the way "who's hiring" posts are stored in HackerNews
 			// It is only possible to find them through the title, so this was condition
@@ -47,7 +52,7 @@ namespace HackerNews.Reader
 
 			if (_commentRecursionLevel != CommentLevel.None)
 			{
-				article = GetComments(article);
+				article = GetComments(article, token);
 			}
 
 			article.Validate();
@@ -55,22 +60,22 @@ namespace HackerNews.Reader
 			return article;
 		}
 
-		public IEnumerable<Post> GetPosts(PostType postType = PostType.Stories)
+		public IEnumerable<Post> GetPosts(CancellationToken token, PostType postType = PostType.Stories)
         {
             var uri = InvokeHackerNewsApi(postTypes[postType]);
 			var ids = JsonConvert.DeserializeObject<List<int>>(uri.Result).Take(_numberOfPosts).ToList();
 
 			foreach (int i in ids)
 			{
-				yield return GetPostById(i).Result;
+				yield return GetPostById(i, token).Result;
 			}
         }
 
-		public IEnumerable<Post> GetPostsById(int[] ids)
+		public IEnumerable<Post> GetPostsById(int[] ids, CancellationToken token)
 		{
 			foreach (int id in ids)
 			{
-				yield return GetPostById(id).Result;
+				yield return GetPostById(id, token).Result;
 			}
 		}
 
@@ -80,9 +85,9 @@ namespace HackerNews.Reader
 		/// <param name="postType"></param>
 		/// <param name="outputToConsole"></param>
 		/// <returns></returns>
-		public IEnumerable<string> GetPostsInJsonFormat(PostType postType = PostType.Stories, bool outputToConsole = false)
+		public IEnumerable<string> GetPostsInJsonFormat(CancellationToken token, PostType postType = PostType.Stories, bool outputToConsole = false)
         {
-            var posts = GetPosts(postType);
+            var posts = GetPosts(token, postType);
 
 			foreach (var post in posts)
             {
@@ -99,14 +104,14 @@ namespace HackerNews.Reader
         /// Retrieves only "Who is hiring" posts
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<Post> GetHiringPosts()
+        public IEnumerable<Post> GetHiringPosts(CancellationToken token)
         {
             var uri = InvokeHackerNewsApi(postTypes[PostType.Stories]);
             var ids = JsonConvert.DeserializeObject<List<int>>(uri.Result).Take(_numberOfPosts).ToArray();
 
             foreach (int id in ids)
             {
-				var post = GetPostById(id, true);
+				var post = GetPostById(id, token, true);
 
 				if (post != null)
 					yield return post.Result;
@@ -119,7 +124,7 @@ namespace HackerNews.Reader
         /// If all comments are specified, calls itself recursively to find descendants.
         /// </summary>
         /// <returns></returns>
-        private Post GetComments(Post parent)
+        private Post GetComments(Post parent, CancellationToken token)
         {
             if (!parent.HasKids) return parent;
 
@@ -129,6 +134,9 @@ namespace HackerNews.Reader
                 var jsonComment = InvokeHackerNewsApi(commentLink);
                 Post descendantComment = JsonConvert.DeserializeObject<Post>(jsonComment.Result);
 
+				if (token.IsCancellationRequested)
+					throw new TaskCanceledException($"Stopped at comment: { descendantComment.Id } at { DateTime.Now }");
+
 				if (descendantComment == null)
 					continue;
 
@@ -136,7 +144,7 @@ namespace HackerNews.Reader
 
                 if (_commentRecursionLevel == CommentLevel.Full)
                 {
-					GetComments(descendantComment);
+					GetComments(descendantComment, token);
                 }
             }
 
