@@ -8,61 +8,44 @@ using Newtonsoft.Json;
 namespace HackerNews.Reader
 {
     /// <summary>
-    /// Specifies type of posts to retrieve
-    /// </summary>
-    public enum PostType
-    {
-        Stories,
-        Jobs,
-        Ask,
-        Show
-    }
-
-    /// <summary>
-    /// Specifies how deep to go when retrieving comments for a story
-    /// </summary>
-    public enum CommentLevel
-    {
-        None, // no replies
-        Full // all comments
-    }
-
-    /// <summary>
-    /// Uses the HackerNews API to read top stories/ask/jobs/polls
-    /// Performs validation according to spec and outputs results to console
-    /// in JSON format.
+    /// Uses the HackerNews API to asynchronously retrieve top stories/ask/jobs/polls
+    /// Returns either POCO or JSON
     /// </summary>
     public class Reader
     {
-        private bool _retrieveComments;
         private CommentLevel _commentRecursionLevel;
         private int _numberOfPosts = 0;
 
-        public Dictionary<PostType, string> postTypes = new Dictionary<PostType, string>()
-        {
-            { PostType.Stories,  "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty" },
-            { PostType.Jobs, "https://hacker-news.firebaseio.com/v0/jobstories.json?print=pretty" },
-            { PostType.Ask, "https://hacker-news.firebaseio.com/v0/askstories.json?print=pretty" },
-            { PostType.Show, "https://hacker-news.firebaseio.com/v0/showstories.json?print=pretty" }
+		public Dictionary<PostType, string> postTypes = new Dictionary<PostType, string>()
+		{
+			{ PostType.Stories, Constants.HackerNewsTopStoriesUri },
+			{ PostType.Jobs, Constants.HackerNewsJobsUri },
+			{ PostType.Ask, Constants.HackernewsAskUri },
+			{ PostType.Show, Constants.HackerNewsShowUri }
         };
 
-        public Reader(int numberOfPosts = 100, bool retrieveComments = false, CommentLevel level = CommentLevel.None)
+        public Reader(int numberOfPosts = 100, CommentLevel level = CommentLevel.None)
         {
             if (numberOfPosts == 0 || numberOfPosts < 0)
                 throw new ArgumentException("Please specify a valid number of posts");
 
-            _retrieveComments = retrieveComments;
             _commentRecursionLevel = level;
             _numberOfPosts = numberOfPosts;
         }
 
-		public async Task<Post> GetPostById(int id)
+		public async Task<Post> GetPostById(int id, bool returnNullIfNotHiringPost = false)
 		{
 			string link = $"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty";
 			var list = await InvokeHackerNewsApi(link);
 			Post article = JsonConvert.DeserializeObject<Post>(list);
 
-			if (_retrieveComments)
+			// Special case, due to the way "who's hiring" posts are stored in HackerNews
+			// It is only possible to find them through the title, so this was condition
+			// was added if one is only interested in them, it enables filtering posts that 
+			// are not hiring without having to get full comments
+			if (returnNullIfNotHiringPost && !article.IsHiring) return null;
+
+			if (_commentRecursionLevel != CommentLevel.None)
 			{
 				article = GetComments(article);
 			}
@@ -123,20 +106,10 @@ namespace HackerNews.Reader
 
             foreach (int id in ids)
             {
-                string link = $"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty";
-                var list = InvokeHackerNewsApi(link);
-                Post article = JsonConvert.DeserializeObject<Post>(list.Result);
+				var post = GetPostById(id, true);
 
-                if (!article.IsHiring) continue;
-
-                if (_retrieveComments)
-                {
-                    article = GetComments(article);
-                }
-
-                article.Validate();
-
-				yield return article;
+				if (post != null)
+					yield return post.Result;
             }
         }
 
@@ -146,16 +119,20 @@ namespace HackerNews.Reader
         /// If all comments are specified, calls itself recursively to find descendants.
         /// </summary>
         /// <returns></returns>
-        private Post GetComments(Post comment)
+        private Post GetComments(Post parent)
         {
-            if (!comment.HasKids) return comment;
+            if (!parent.HasKids) return parent;
 
-            foreach (var commentId in comment.Kids)
+            foreach (var commentId in parent.Kids)
             {
                 string commentLink = $"https://hacker-news.firebaseio.com/v0/item/{commentId}.json?print=pretty";
                 var jsonComment = InvokeHackerNewsApi(commentLink);
                 Post descendantComment = JsonConvert.DeserializeObject<Post>(jsonComment.Result);
-                comment.Comments.Add(comment);
+
+				if (descendantComment == null)
+					continue;
+
+				parent.Comments.Add(descendantComment);
 
                 if (_commentRecursionLevel == CommentLevel.Full)
                 {
@@ -163,7 +140,7 @@ namespace HackerNews.Reader
                 }
             }
 
-            return comment;
+            return parent;
         }
 
         private async Task<string> InvokeHackerNewsApi(string url)

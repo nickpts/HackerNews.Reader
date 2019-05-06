@@ -20,6 +20,7 @@ namespace HackerNews.Reader
         public bool HasKids => Kids != null;
         public List<Post> Comments { get; set; } = new List<Post>();
         public bool IsHiring => Title.Contains("Ask HN: Who is hiring");
+		public string Type { get; set; }
 
         public void Validate()
         {
