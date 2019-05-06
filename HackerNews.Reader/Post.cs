@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace HackerNews.Reader
 {
     /// <summary>
-    /// Basic DTO, includes some validation and serialization logic
+    /// Basic POCO, includes some validation and serialization logic
     /// </summary>
     public class Post
     {
@@ -16,7 +16,6 @@ namespace HackerNews.Reader
         public List<int> Kids { get; set; }
         public int Score { get; set; }
         public int Time { get; set; }
-        public int Rank { get; set; }
         public string Text { get; set; }
         public bool HasKids => Kids != null;
         public List<Post> Comments { get; set; } = new List<Post>();
@@ -38,8 +37,6 @@ namespace HackerNews.Reader
             if (Score < 0)
                 throw new ArgumentException("Points cannot be less than zero");
 
-            if (Rank < 0)
-                throw new ArgumentException("Rank cannot be less than zero");
         }
     }
 }

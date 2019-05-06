@@ -74,13 +74,5 @@ namespace HackerNews.Reader.Test
             var post = new Post() { Title = "test", By = "test", Url = "http://www.hackernews.com", Score = -1 };
             post.Validate();
         }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void PostShouldThrowExceptionIfRankLessThanZero()
-        {
-            var post = new Post() { Title = "test", By = "test", Url = "http://www.hackernews.com", Score = 10, Rank = -1 };
-            post.Validate();
-        }
     }
 }

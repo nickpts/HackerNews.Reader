@@ -56,11 +56,11 @@ namespace HackerNews.Reader
             _numberOfPosts = numberOfPosts;
         }
 
-		public Post GetPostById(int id)
+		public async Task<Post> GetPostById(int id)
 		{
 			string link = $"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty";
-			var list = InvokeHackerNewsApi(link);
-			Post article = JsonConvert.DeserializeObject<Post>(list.Result);
+			var list = await InvokeHackerNewsApi(link);
+			Post article = JsonConvert.DeserializeObject<Post>(list);
 
 			if (_retrieveComments)
 			{
@@ -79,7 +79,7 @@ namespace HackerNews.Reader
 
 			foreach (int i in ids)
 			{
-				yield return GetPostById(i);
+				yield return GetPostById(i).Result;
 			}
         }
 
@@ -87,7 +87,7 @@ namespace HackerNews.Reader
 		{
 			foreach (int id in ids)
 			{
-				yield return GetPostById(id);
+				yield return GetPostById(id).Result;
 			}
 		}
 
@@ -100,9 +100,8 @@ namespace HackerNews.Reader
 		public IEnumerable<string> GetPostsInJsonFormat(PostType postType = PostType.Stories, bool outputToConsole = false)
         {
             var posts = GetPosts(postType);
-            var jsonPosts = new List<string>();
 
-            foreach (var post in posts)
+			foreach (var post in posts)
             {
                 string json = JsonConvert.SerializeObject(post, Formatting.Indented);
 

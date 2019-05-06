@@ -33,7 +33,7 @@ namespace HackerNews.Reader.Test
         public void ReaderRetrievesPostsCorrectly()
         {
             var scraper = new Reader(5, true, CommentLevel.None);
-            scraper.RetrievePosts();
+            scraper.GetPosts();
         }
     }
 }
