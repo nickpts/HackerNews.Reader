@@ -26,6 +26,10 @@
     <DocumentationFile>C:\Users\Nick\Dev\src\projects\HackerNews.Reader\HackerNews.Reader\HackerNews.Reader.xml</DocumentationFile>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>C:\Users\Nick\Dev\src\projects\HackerNews.Reader\HackerNews.Reader\HackerNews.Reader.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   </ItemGroup>
