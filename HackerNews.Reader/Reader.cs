@@ -1,9 +1,31 @@
-﻿using System;
+﻿#region License
+
+/*
+ * All content copyright Marko Lahma, unless otherwise indicated. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy
+ * of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ */
+
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Newtonsoft.Json;
 
 namespace HackerNews.Reader
@@ -25,16 +47,35 @@ namespace HackerNews.Reader
 			{ PostType.Show, Constants.HackerNewsShowUri }
         };
 
+		/// <param name="numberOfPosts">amount of posts to get</param>
+		/// <param name="level">how deep to go when getting comments of a story</param>
         public Reader(int numberOfPosts = 100, CommentLevel level = CommentLevel.None)
         {
             if (numberOfPosts == 0 || numberOfPosts < 0)
-                throw new ArgumentException("Please specify a valid number of posts");
+                throw new ArgumentException(nameof(numberOfPosts));
 
             _commentRecursionLevel = level;
             _numberOfPosts = numberOfPosts;
         }
 
+		/// <summary>
+		/// Gets the top n number of posts specified on instantiation. 
+		/// </summary>
 		/// <returns></returns>
+		public IEnumerable<Post> GetPosts(CancellationToken token, PostType postType = PostType.Stories)
+		{
+			var uri = InvokeHackerNewsApi(postTypes[postType]);
+			var ids = JsonConvert.DeserializeObject<List<int>>(uri.Result).Take(_numberOfPosts).ToList();
+
+			foreach (int i in ids)
+			{
+				yield return GetPostById(i, token).Result;
+			}
+		}
+
+		/// <summary>
+		/// Gets a single post by id
+		/// </summary>
 		public async Task<Post> GetPostById(int id, CancellationToken token, bool returnNullIfNotHiringPost = false)
 		{
 			string link = $"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty";
@@ -60,17 +101,9 @@ namespace HackerNews.Reader
 			return article;
 		}
 
-		public IEnumerable<Post> GetPosts(CancellationToken token, PostType postType = PostType.Stories)
-        {
-            var uri = InvokeHackerNewsApi(postTypes[postType]);
-			var ids = JsonConvert.DeserializeObject<List<int>>(uri.Result).Take(_numberOfPosts).ToList();
-
-			foreach (int i in ids)
-			{
-				yield return GetPostById(i, token).Result;
-			}
-        }
-
+		/// <summary>
+		/// Gets posts by their ids
+		/// </summary>
 		public IEnumerable<Post> GetPostsById(int[] ids, CancellationToken token)
 		{
 			foreach (int id in ids)
@@ -80,11 +113,8 @@ namespace HackerNews.Reader
 		}
 
 		/// <summary>
-		/// Retrieves posts and comments in json format, optionally outputs to console
+		/// Gets posts and comments in json format, optionally outputs to console
 		/// </summary>
-		/// <param name="postType"></param>
-		/// <param name="outputToConsole"></param>
-		/// <returns></returns>
 		public IEnumerable<string> GetPostsInJsonFormat(CancellationToken token, PostType postType = PostType.Stories, bool outputToConsole = false)
         {
             var posts = GetPosts(token, postType);
@@ -101,9 +131,10 @@ namespace HackerNews.Reader
         }
 
         /// <summary>
-        /// Retrieves only "Who is hiring" posts
+        /// Gets "Who is hiring" posts, where employers advertise.
+		/// These are returned as type "story" from the HN API,
+		/// so parsing the article title is needed to determine if it is a hiring post.
         /// </summary>
-        /// <returns></returns>
         public IEnumerable<Post> GetHiringPosts(CancellationToken token)
         {
             var uri = InvokeHackerNewsApi(postTypes[PostType.Stories]);
@@ -123,7 +154,6 @@ namespace HackerNews.Reader
         /// <summary>
         /// If all comments are specified, calls itself recursively to find descendants.
         /// </summary>
-        /// <returns></returns>
         private Post GetComments(Post parent, CancellationToken token)
         {
             if (!parent.HasKids) return parent;
