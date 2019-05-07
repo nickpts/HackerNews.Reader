@@ -8,16 +8,16 @@
     <StartupObject />
     <Description>A .NET standard library that that retrieves HackerNews posts in either POCO or JSON format.</Description>
     <Copyright>Copyright Nick Patsaris</Copyright>
-    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <PackageLicenseUrl></PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/nickpts/HackerNews.Reader</PackageProjectUrl>
     <RepositoryUrl>https://github.com/nickpts/HackerNews.Reader.git</RepositoryUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Company />
     <Product />
     <Authors>Nick Patsaris</Authors>
-    <AssemblyVersion>1.0.0.3</AssemblyVersion>
-    <FileVersion>1.0.0.3</FileVersion>
-    <Version>1.0.0.3</Version>
+    <AssemblyVersion>1.0.0.4</AssemblyVersion>
+    <FileVersion>1.0.0.4</FileVersion>
+    <Version>1.0.0.4</Version>
   </PropertyGroup>
 
   <ItemGroup>
