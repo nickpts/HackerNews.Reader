@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>HackerNews.Reader</name>
+    </assembly>
+    <members>
+        <member name="T:HackerNews.Reader.PostType">
+            <summary>
+            Specifies type of posts to retrieve
+            </summary>
+        </member>
+        <member name="T:HackerNews.Reader.CommentLevel">
+            <summary>
+            Specifies how deep to go when retrieving comments for a story
+            </summary>
+        </member>
+        <member name="T:HackerNews.Reader.Post">
+            <summary>
+            Basic POCO, includes some validation and serialization logic
+            </summary>
+        </member>
+        <member name="T:HackerNews.Reader.PostReader">
+            <summary>
+            Uses the HackerNews API to asynchronously retrieve top stories/ask/jobs/polls
+            Returns either POCO or JSON
+            </summary>
+        </member>
+        <member name="M:HackerNews.Reader.PostReader.#ctor(System.Int32,HackerNews.Reader.CommentLevel)">
+            <param name="numberOfPosts">amount of posts to get</param>
+            <param name="level">how deep to go when getting comments of a story</param>
+        </member>
+        <member name="M:HackerNews.Reader.PostReader.Get(System.Threading.CancellationToken,HackerNews.Reader.PostType)">
+            <summary>
+            Gets the top n number of posts specified on instantiation. 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:HackerNews.Reader.PostReader.GetById(System.Int32[],System.Threading.CancellationToken)">
+            <summary>
+            Gets posts by their ids
+            </summary>
+        </member>
+        <member name="M:HackerNews.Reader.PostReader.GetPostsInJsonFormat(System.Threading.CancellationToken,HackerNews.Reader.PostType,System.Boolean)">
+            <summary>
+            Gets posts and comments in json format, optionally outputs to console
+            </summary>
+        </member>
+        <member name="M:HackerNews.Reader.PostReader.GetHiringPosts(System.Threading.CancellationToken)">
+            <summary>
+            Gets "Who is hiring" posts, where employers advertise.
+            These are returned as type "story" from the HN API,
+            so parsing the article title is needed to determine if it is a hiring post.
+            </summary>
+        </member>
+        <member name="M:HackerNews.Reader.PostReader.GetComments(HackerNews.Reader.Post,System.Threading.CancellationToken)">
+            <summary>
+            If all comments are specified, calls itself recursively to find descendants.
+            </summary>
+        </member>
+        <member name="M:HackerNews.Reader.PostReader.GetById(System.Int32,System.Threading.CancellationToken,System.Boolean)">
+            <summary>
+            Gets a single post by id
+            </summary>
+        </member>
+    </members>
+</doc>
