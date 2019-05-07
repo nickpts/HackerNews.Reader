@@ -34,7 +34,7 @@ namespace HackerNews.Reader
     /// Uses the HackerNews API to asynchronously retrieve top stories/ask/jobs/polls
     /// Returns either POCO or JSON
     /// </summary>
-    public class Reader
+    public class PostReader
     {
         private CommentLevel _commentRecursionLevel;
         private int _numberOfPosts = 0;
@@ -49,7 +49,7 @@ namespace HackerNews.Reader
 
 		/// <param name="numberOfPosts">amount of posts to get</param>
 		/// <param name="level">how deep to go when getting comments of a story</param>
-        public Reader(int numberOfPosts = 100, CommentLevel level = CommentLevel.None)
+        public PostReader(int numberOfPosts = 100, CommentLevel level = CommentLevel.None)
         {
             if (numberOfPosts == 0 || numberOfPosts < 0)
                 throw new ArgumentException(nameof(numberOfPosts));
@@ -62,53 +62,25 @@ namespace HackerNews.Reader
 		/// Gets the top n number of posts specified on instantiation. 
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<Post> GetPosts(CancellationToken token, PostType postType = PostType.Stories)
+		public IEnumerable<Post> Get(CancellationToken token, PostType postType = PostType.Stories)
 		{
 			var uri = InvokeHackerNewsApi(postTypes[postType]);
 			var ids = JsonConvert.DeserializeObject<List<int>>(uri.Result).Take(_numberOfPosts).ToList();
 
 			foreach (int i in ids)
 			{
-				yield return GetPostById(i, token).Result;
+				yield return GetById(i, token).Result;
 			}
-		}
-
-		/// <summary>
-		/// Gets a single post by id
-		/// </summary>
-		public async Task<Post> GetPostById(int id, CancellationToken token, bool returnNullIfNotHiringPost = false)
-		{
-			string link = $"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty";
-			var list = await InvokeHackerNewsApi(link);
-			Post article = JsonConvert.DeserializeObject<Post>(list);
-
-			if (token.IsCancellationRequested)
-				throw new TaskCanceledException($"Stopped at parent: { article.Id } at { DateTime.Now }");
-
-			// Special case, due to the way "who's hiring" posts are stored in HackerNews
-			// It is only possible to find them through the title, so this was condition
-			// was added if one is only interested in them, it enables filtering posts that 
-			// are not hiring without having to get full comments
-			if (returnNullIfNotHiringPost && !article.IsHiring) return null;
-
-			if (_commentRecursionLevel != CommentLevel.None)
-			{
-				article = GetComments(article, token);
-			}
-
-			article.Validate();
-
-			return article;
 		}
 
 		/// <summary>
 		/// Gets posts by their ids
 		/// </summary>
-		public IEnumerable<Post> GetPostsById(int[] ids, CancellationToken token)
+		public IEnumerable<Post> GetById(int[] ids, CancellationToken token)
 		{
 			foreach (int id in ids)
 			{
-				yield return GetPostById(id, token).Result;
+				yield return GetById(id, token).Result;
 			}
 		}
 
@@ -117,7 +89,7 @@ namespace HackerNews.Reader
 		/// </summary>
 		public IEnumerable<string> GetPostsInJsonFormat(CancellationToken token, PostType postType = PostType.Stories, bool outputToConsole = false)
         {
-            var posts = GetPosts(token, postType);
+            var posts = Get(token, postType);
 
 			foreach (var post in posts)
             {
@@ -142,7 +114,7 @@ namespace HackerNews.Reader
 
             foreach (int id in ids)
             {
-				var post = GetPostById(id, token, true);
+				var post = GetById(id, token, true);
 
 				if (post != null)
 					yield return post.Result;
@@ -181,7 +153,35 @@ namespace HackerNews.Reader
             return parent;
         }
 
-        private async Task<string> InvokeHackerNewsApi(string url)
+		/// <summary>
+		/// Gets a single post by id
+		/// </summary>
+		private async Task<Post> GetById(int id, CancellationToken token, bool returnNullIfNotHiringPost = false)
+		{
+			string link = $"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty";
+			var list = await InvokeHackerNewsApi(link);
+			Post article = JsonConvert.DeserializeObject<Post>(list);
+
+			if (token.IsCancellationRequested)
+				throw new TaskCanceledException($"Stopped at parent: { article.Id } at { DateTime.Now }");
+
+			// Special case, due to the way "who's hiring" posts are stored in HackerNews
+			// It is only possible to find them through the title, so this was condition
+			// was added if one is only interested in them, it enables filtering posts that 
+			// are not hiring without having to get full comments
+			if (returnNullIfNotHiringPost && !article.IsHiring) return null;
+
+			if (_commentRecursionLevel != CommentLevel.None)
+			{
+				article = GetComments(article, token);
+			}
+
+			article.Validate();
+
+			return article;
+		}
+
+		private async Task<string> InvokeHackerNewsApi(string url)
         {
             using (var httpClient = new HttpClient())
             {

@@ -20,6 +20,8 @@
 #endregion
 
 using System;
+using System.Threading;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace HackerNews.Reader.Test
@@ -36,21 +38,22 @@ namespace HackerNews.Reader.Test
         [ExpectedException(typeof(ArgumentException))]
         public void ReaderThrowsExceptionIfZeroPostsSpecified()
         {
-            var reader = new Reader(0);
+            var reader = new PostReader(0);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ReaderThrowsExceptionIfNegativePostsSpecified()
         {
-            var reader = new Reader(-1);
+            var reader = new PostReader(-1);
         }
 
         [TestMethod]
         public void ReaderRetrievesPostsCorrectly()
         {
-            var scraper = new Reader(1, CommentLevel.Full);
-			var post = scraper.GetPostById(19797594, new System.Threading.CancellationToken(), true).Result;
+            var reader = new PostReader(1, CommentLevel.Full);
+			var ids = new int[] { 19797594 };
+			var post = reader.GetById(ids, new CancellationToken());
         }
     }
 }
