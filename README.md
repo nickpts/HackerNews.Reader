@@ -1,7 +1,7 @@
 ## HackerNews.Reader
 
 #### Description
-A .NET standard library that that retrieves HackerNews posts in either POCO or JSON format.
+A .NET standard library that retrieves HackerNews posts in either POCO or JSON format.
 
 #### Implementation
 HN hosts a Rest API as seen here: https://github.com/HackerNews/API. For brevity, and conciseness, this was the best approach to pull information out of HN. 
