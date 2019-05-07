@@ -11,12 +11,13 @@
     <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/nickpts/HackerNews.Reader</PackageProjectUrl>
     <RepositoryUrl>https://github.com/nickpts/HackerNews.Reader.git</RepositoryUrl>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Company />
     <Product />
     <Authors>Nick Patsaris</Authors>
     <AssemblyVersion>1.0.0.3</AssemblyVersion>
     <FileVersion>1.0.0.3</FileVersion>
+    <Version>1.0.0.3</Version>
   </PropertyGroup>
 
   <ItemGroup>
