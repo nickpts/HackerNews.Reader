@@ -39,14 +39,6 @@ namespace HackerNews.Reader
         private CommentLevel _commentRecursionLevel;
         private int _numberOfPosts = 0;
 
-		public Dictionary<PostType, string> postTypes = new Dictionary<PostType, string>()
-		{
-			{ PostType.Stories, Constants.HackerNewsTopStoriesUri },
-			{ PostType.Jobs, Constants.HackerNewsJobsUri },
-			{ PostType.Ask, Constants.HackernewsAskUri },
-			{ PostType.Show, Constants.HackerNewsShowUri }
-        };
-
 		/// <param name="numberOfPosts">amount of posts to get</param>
 		/// <param name="level">how deep to go when getting comments of a story</param>
         public PostReader(int numberOfPosts = 100, CommentLevel level = CommentLevel.None)
@@ -64,7 +56,7 @@ namespace HackerNews.Reader
 		/// <returns></returns>
 		public IEnumerable<Post> Get(CancellationToken token, PostType postType = PostType.Stories)
 		{
-			var uri = InvokeHackerNewsApi(postTypes[postType]);
+			var uri = InvokeHackerNewsApi(Constants.postTypes[postType]);
 			var ids = JsonConvert.DeserializeObject<List<int>>(uri.Result).Take(_numberOfPosts).ToList();
 
 			foreach (int i in ids)
@@ -99,25 +91,6 @@ namespace HackerNews.Reader
                     Console.WriteLine(json);
 
 				yield return json;
-            }
-        }
-
-        /// <summary>
-        /// Gets "Who is hiring" posts, where employers advertise.
-		/// These are returned as type "story" from the HN API,
-		/// so parsing the article title is needed to determine if it is a hiring post.
-        /// </summary>
-        public IEnumerable<Post> GetHiringPosts(CancellationToken token)
-        {
-            var uri = InvokeHackerNewsApi(postTypes[PostType.Stories]);
-            var ids = JsonConvert.DeserializeObject<List<int>>(uri.Result).Take(_numberOfPosts).ToArray();
-
-            foreach (int id in ids)
-            {
-				var post = GetById(id, token, true);
-
-				if (post != null)
-					yield return post.Result;
             }
         }
 
@@ -164,12 +137,6 @@ namespace HackerNews.Reader
 
 			if (token.IsCancellationRequested)
 				throw new TaskCanceledException($"Stopped at parent: { article.Id } at { DateTime.Now }");
-
-			// Special case, due to the way "who's hiring" posts are stored in HackerNews
-			// It is only possible to find them through the title, so this was condition
-			// was added if one is only interested in them, it enables filtering posts that 
-			// are not hiring without having to get full comments
-			if (returnNullIfNotHiringPost && !article.IsHiring) return null;
 
 			if (_commentRecursionLevel != CommentLevel.None)
 			{

@@ -20,6 +20,7 @@
 #endregion
 
 using System;
+using System.Linq;
 using System.Threading;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -51,9 +52,9 @@ namespace HackerNews.Reader.Test
         [TestMethod]
         public void ReaderRetrievesPostsCorrectly()
         {
-            var reader = new PostReader(1, CommentLevel.Full);
+            var reader = new PostReader(300, CommentLevel.Full);
 			var ids = new int[] { 19797594 };
-			var post = reader.GetById(ids, new CancellationToken());
+			var post = reader.GetById(ids, new CancellationToken()).ToList();
         }
     }
 }

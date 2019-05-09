@@ -9,9 +9,49 @@
             Specifies type of posts to retrieve
             </summary>
         </member>
+        <member name="F:HackerNews.Reader.PostType.Stories">
+            <summary>
+            General interest stories submitted from users
+            </summary>
+        </member>
+        <member name="F:HackerNews.Reader.PostType.Jobs">
+            <summary>
+            Employers advertising openings
+            </summary>
+        </member>
+        <member name="F:HackerNews.Reader.PostType.Ask">
+            <summary>
+            Help with technical or other questions
+            </summary>
+        </member>
+        <member name="F:HackerNews.Reader.PostType.Show">
+            <summary>
+            Demonstrations of technical projects/papers, etc.
+            </summary>
+        </member>
         <member name="T:HackerNews.Reader.CommentLevel">
             <summary>
             Specifies how deep to go when retrieving comments for a story
+            </summary>
+        </member>
+        <member name="F:HackerNews.Reader.CommentLevel.None">
+            <summary>
+            Do not rerieve any comments
+            </summary>
+        </member>
+        <member name="F:HackerNews.Reader.CommentLevel.FirstLevel">
+            <summary>
+            Only direct descendants to the story, no replies to comments
+            </summary>
+        </member>
+        <member name="F:HackerNews.Reader.CommentLevel.Full">
+            <summary>
+            All descendnants
+            </summary>
+        </member>
+        <member name="F:HackerNews.Reader.Constants.HackerNewsTopStoriesUri">
+            <summary>
+            TODO: move these out to a config file
             </summary>
         </member>
         <member name="T:HackerNews.Reader.Post">

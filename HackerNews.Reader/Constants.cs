@@ -19,6 +19,8 @@
 
 #endregion
 
+using System.Collections.Generic;
+
 namespace HackerNews.Reader
 {
 	/// <summary>
@@ -26,9 +28,24 @@ namespace HackerNews.Reader
 	/// </summary>
 	public enum PostType
 	{
+		/// <summary>
+		/// General interest stories submitted from users
+		/// </summary>
 		Stories,
+
+		/// <summary>
+		/// Employers advertising openings
+		/// </summary>
 		Jobs,
+
+		/// <summary>
+		/// Help with technical or other questions
+		/// </summary>
 		Ask,
+
+		/// <summary>
+		/// Demonstrations of technical projects/papers, etc.
+		/// </summary>
 		Show
 	}
 
@@ -37,17 +54,39 @@ namespace HackerNews.Reader
 	/// </summary>
 	public enum CommentLevel
 	{
-		None, // do not retrieve any comments
-		FirstLevel, // only comments directly to the story, no replies
-		Full // all comments
+		/// <summary>
+		/// Do not rerieve any comments
+		/// </summary>
+		None, 
+
+		/// <summary>
+		/// Only direct descendants to the story, no replies to comments
+		/// </summary>
+		FirstLevel, 
+
+		/// <summary>
+		/// All descendnants
+		/// </summary>
+		Full 
 	}
 
 	public class Constants
 	{
+		/// <summary>
+		/// TODO: move these out to a config file
+		/// </summary>
 		public const string HackerNewsTopStoriesUri = "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty";
 		public const string HackerNewsJobsUri = "https://hacker-news.firebaseio.com/v0/jobstories.json?print=pretty";
 		public const string HackernewsAskUri = "https://hacker-news.firebaseio.com/v0/askstories.json?print=pretty";
 		public const string HackerNewsShowUri = "https://hacker-news.firebaseio.com/v0/showstories.json?print=pretty";
+		
+		public static readonly Dictionary<PostType, string> postTypes = new Dictionary<PostType, string>()
+		{
+			{ PostType.Stories, HackerNewsTopStoriesUri },
+			{ PostType.Jobs, HackerNewsJobsUri },
+			{ PostType.Ask, HackernewsAskUri },
+			{ PostType.Show, HackerNewsShowUri }
+		};
 
 	}
 }
