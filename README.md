@@ -12,9 +12,6 @@ Other approaches considered:
 - Algolia API: the API HN uses every time you make a search through the website. Clunky with limited calls available, I found the data to be sometimes unreliable.
 
 #### How to run
-The following third party libraries are needed:
-1) Newtonsoft.Json (for serialization/deserialization)
-2) FluentAssertions (for unit testing)
-
+```Install-Package HackerNews.Reader -Version 1.0.7```
 
 
