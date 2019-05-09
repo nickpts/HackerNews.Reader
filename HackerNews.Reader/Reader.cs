@@ -39,9 +39,12 @@ namespace HackerNews.Reader
         private CommentLevel _commentRecursionLevel;
         private int _numberOfPosts = 0;
 
+		/// <summary>
+		/// Instantiates a new post reader
+		/// </summary>
 		/// <param name="numberOfPosts">amount of posts to get</param>
 		/// <param name="level">how deep to go when getting comments of a story</param>
-        public PostReader(int numberOfPosts = 100, CommentLevel level = CommentLevel.None)
+		public PostReader(int numberOfPosts = 100, CommentLevel level = CommentLevel.None)
         {
             if (numberOfPosts == 0 || numberOfPosts < 0)
                 throw new ArgumentException(nameof(numberOfPosts));

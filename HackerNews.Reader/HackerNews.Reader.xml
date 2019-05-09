@@ -85,13 +85,6 @@
             Gets posts and comments in json format, optionally outputs to console
             </summary>
         </member>
-        <member name="M:HackerNews.Reader.PostReader.GetHiringPosts(System.Threading.CancellationToken)">
-            <summary>
-            Gets "Who is hiring" posts, where employers advertise.
-            These are returned as type "story" from the HN API,
-            so parsing the article title is needed to determine if it is a hiring post.
-            </summary>
-        </member>
         <member name="M:HackerNews.Reader.PostReader.GetComments(HackerNews.Reader.Post,System.Threading.CancellationToken)">
             <summary>
             If all comments are specified, calls itself recursively to find descendants.
