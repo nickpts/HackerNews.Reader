@@ -39,55 +39,55 @@ namespace HackerNews.Reader
         private CommentLevel _commentRecursionLevel;
         private int _numberOfPosts = 0;
 
-	public PostReader(int numberfOfPosts = 100, CommentLevel level = CommentLevel.None)
-	{
-	    if (numberfOfPosts == 0 || numberfOfPosts < 0) throw new ArgumentException(nameof(numberfOfPosts));
+		public PostReader(int numberfOfPosts = 100, CommentLevel level = CommentLevel.None)
+		{
+			if (numberfOfPosts == 0 || numberfOfPosts < 0) throw new ArgumentException(nameof(numberfOfPosts));
 
- 	    _commentRecursionLevel = level;
-	    _numberOfPosts = numberfOfPosts;
-	}
+ 			_commentRecursionLevel = level;
+			_numberOfPosts = numberfOfPosts;
+		}
 
-	/// <summary>
-	/// Gets the top n number of posts specified on instantiation. 
-	/// </summary>
-	/// <returns></returns>
-	public IEnumerable<Post> Get(CancellationToken token, PostType postType = PostType.Stories)
-	{
-	    var uri = InvokeHackerNewsApi(Constants.postTypes[postType]);
-	    var ids = JsonConvert.DeserializeObject<List<int>>(uri.Result).Take(_numberOfPosts).ToList();
+		/// <summary>
+		/// Gets the top n number of posts specified on instantiation. 
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<Post> Get(CancellationToken token, PostType postType = PostType.Stories)
+		{
+			var uri = InvokeHackerNewsApi(Constants.postTypes[postType]);
+		    var ids = JsonConvert.DeserializeObject<List<int>>(uri.Result).Take(_numberOfPosts).ToList();
 
-	    foreach (int i in ids)
+		    foreach (int i in ids)
+			{
+		        yield return GetById(i, token).Result;
+		    }
+		}
+
+		/// <summary>
+		/// Gets posts by their ids
+		/// </summary>
+		public IEnumerable<Post> GetById(int[] ids, CancellationToken token)
+		{
+			foreach (int id in ids)
+			{
+				yield return GetById(id, token).Result;
+			}
+		}
+
+		/// <summary>
+		/// Gets posts and comments in json format, optionally outputs to console
+		/// </summary>
+		public IEnumerable<string> GetPostsInJsonFormat(CancellationToken token, PostType postType = PostType.Stories, bool outputToConsole = false)
 	    {
-	        yield return GetById(i, token).Result;
-	    }
-	}
-
-	/// <summary>
-	/// Gets posts by their ids
-	/// </summary>
-	public IEnumerable<Post> GetById(int[] ids, CancellationToken token)
-	{
-	    foreach (int id in ids)
-	    {
-	        yield return GetById(id, token).Result;
-	    }
-	}
-
-	/// <summary>
-	/// Gets posts and comments in json format, optionally outputs to console
-	/// </summary>
-	public IEnumerable<string> GetPostsInJsonFormat(CancellationToken token, PostType postType = PostType.Stories, bool outputToConsole = false)
-        {
             var posts = Get(token, postType);
 
-	    foreach (var post in posts)
+		    foreach (var post in posts)
             {
                 string json = JsonConvert.SerializeObject(post, Formatting.Indented);
 
                 if (outputToConsole)
                     Console.WriteLine(json);
 
-		yield return json;
+				yield return json;
             }
         }
 
@@ -106,53 +106,52 @@ namespace HackerNews.Reader
                 var jsonComment = InvokeHackerNewsApi(commentLink);
                 Post descendantComment = JsonConvert.DeserializeObject<Post>(jsonComment.Result);
 
-		if (token.IsCancellationRequested)
-		    throw new TaskCanceledException($"Stopped at comment: { descendantComment.Id } at { DateTime.Now }");
+				if (token.IsCancellationRequested)
+					throw new TaskCanceledException($"Stopped at comment: { descendantComment.Id } at { DateTime.Now }");
 
-		if (descendantComment == null)
-		    continue;
+				if (descendantComment == null)
+					continue;
 
-		parent.Comments.Add(descendantComment);
+				parent.Comments.Add(descendantComment);
 
-                if (_commentRecursionLevel == CommentLevel.Full)
-                {
-	            GetComments(descendantComment, token);
-                }
-            }
+				if (_commentRecursionLevel == CommentLevel.Full)
+				{
+					GetComments(descendantComment, token);
+				}
+			}
 
             return parent;
         }
 
-	/// <summary>
-	/// Gets a single post by id
-	/// </summary>
-	private async Task<Post> GetById(int id, CancellationToken token, bool returnNullIfNotHiringPost = false)
-	{
-	    string link = $"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty";
-	    var list = await InvokeHackerNewsApi(link);
-	    Post article = JsonConvert.DeserializeObject<Post>(list);
+		/// <summary>
+		/// Gets a single post by id
+		/// </summary>
+		private async Task<Post> GetById(int id, CancellationToken token, bool returnNullIfNotHiringPost = false)
+		{
+			string link = $"https://hacker-news.firebaseio.com/v0/item/{id}.json?print=pretty";
+			var list = await InvokeHackerNewsApi(link);
+			Post article = JsonConvert.DeserializeObject<Post>(list);
 
-	    if (token.IsCancellationRequested)
-		throw new TaskCanceledException($"Stopped at parent: { article.Id } at { DateTime.Now }");
+			if (token.IsCancellationRequested)
+			throw new TaskCanceledException($"Stopped at parent: { article.Id } at { DateTime.Now }");
 
-	    if (_commentRecursionLevel != CommentLevel.None)
-	    {
-	        article = GetComments(article, token);
-	    }
+			if (_commentRecursionLevel != CommentLevel.None)
+			{
+				article = GetComments(article, token);
+			}
 
-	    article.Validate();
+			article.Validate();
 
-	    return article;
-	}
+			return article;
+		}
 
-	private async Task<string> InvokeHackerNewsApi(string url)
-        {
+		private async Task<string> InvokeHackerNewsApi(string url)
+		{
             using (var httpClient = new HttpClient())
             {
-	        return await httpClient.GetStringAsync(new Uri(url));
+			   return await httpClient.GetStringAsync(new Uri(url));
             }
         }
-
         #endregion
     }
 }
