@@ -46,10 +46,12 @@ namespace HackerNews.Reader
 		/// <param name="level">how deep to go when getting comments of a story</param>
 		public PostReader(int numberOfPosts = 100, CommentLevel level = CommentLevel.None)
         {
-            if (numberOfPosts == 0 || numberOfPosts < 0)
-                throw new ArgumentException(nameof(numberOfPosts));
+			if (numberOfPosts == 0 || numberOfPosts < 0)
+			{
+				throw new ArgumentException(nameof(numberOfPosts));
+			}
 
-            _commentRecursionLevel = level;
+			_commentRecursionLevel = level;
             _numberOfPosts = numberOfPosts;
         }
 
