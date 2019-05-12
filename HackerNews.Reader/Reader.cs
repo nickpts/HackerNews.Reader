@@ -48,20 +48,25 @@ namespace HackerNews.Reader
 		}
 
 		/// <summary>
-		/// Gets the top n number of posts specified on instantiation. 
+		/// Gets top story posts
 		/// </summary>
-		/// <returns></returns>
-		public IEnumerable<Post> Get(CancellationToken token, PostType postType = PostType.Stories)
-		{
-			var uri = InvokeHackerNewsApi(Constants.postTypes[postType]);
-			var ids = JsonConvert.DeserializeObject<List<int>>(uri.Result).Take(_numberOfPosts).ToList();
-
-			foreach (int i in ids)
-			{
-				yield return GetById(i, token).Result;
-			}
-		}
-
+		public IEnumerable<Post> GetTopStories(CancellationToken token) => Get(token, PostType.Stories);
+		
+		/// <summary>
+		/// Gets top job posts
+		/// </summary>
+		public IEnumerable<Post> GetTopJobs(CancellationToken token) => Get(token, PostType.Jobs);
+		
+		/// <summary>
+		/// Get top show posts
+		/// </summary>
+		public IEnumerable<Post> GetTopShow(CancellationToken token) => Get(token, PostType.Show);
+		
+		/// <summary>
+		/// Get top ask posts
+		/// </summary>
+		public IEnumerable<Post> GetTopAsk(CancellationToken token) => Get(token, PostType.Ask);
+		
 		/// <summary>
 		/// Gets posts by their ids
 		/// </summary>
@@ -92,6 +97,21 @@ namespace HackerNews.Reader
 		}
 
 		#region Private implementation
+
+		/// <summary>
+		/// Gets the top n number of posts specified on instantiation. 
+		/// </summary>
+		/// <returns></returns>
+		private IEnumerable<Post> Get(CancellationToken token, PostType postType = PostType.Stories)
+		{
+			var uri = InvokeHackerNewsApi(Constants.postTypes[postType]);
+			var ids = JsonConvert.DeserializeObject<List<int>>(uri.Result).Take(_numberOfPosts).ToList();
+
+			foreach (int i in ids)
+			{
+				yield return GetById(i, token).Result;
+			}
+		}
 
 		/// <summary>
 		/// /// If all comments are specified, calls itself recursively to find descendants.
