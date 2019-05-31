@@ -12,6 +12,6 @@ Other approaches considered:
 - Algolia API: the API HN uses every time you make a search through the website. Clunky with limited calls available, I found the data to be sometimes unreliable.
 
 #### How to run
-```Install-Package HackerNews.Reader -Version 1.0.7```
+```Install-Package HackerNews.Reader```
 
 
