@@ -87,6 +87,8 @@ namespace HackerNews.Reader
 
 			foreach (var post in posts)
 			{
+				token.ThrowIfCancellationRequested();
+
 				string json = JsonConvert.SerializeObject(post, Formatting.Indented);
 
 				if (outputToConsole)
@@ -109,6 +111,7 @@ namespace HackerNews.Reader
 
 			foreach (int i in ids)
 			{
+				token.ThrowIfCancellationRequested();
 				yield return GetById(i, token).Result;
 			}
 		}
